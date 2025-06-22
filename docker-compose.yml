@@ -1,0 +1,58 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:16
+    container_name: print3d-postgres
+    environment:
+      - POSTGRES_USER=print3d
+      - POSTGRES_PASSWORD=print3d
+      - POSTGRES_MULTIPLE_DATABASES=quotation_db,payment_db,invoice_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "print3d"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  quotation-service:
+    build: ./quotation-service
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/quotation_db
+      SPRING_DATASOURCE_USERNAME: print3d
+      SPRING_DATASOURCE_PASSWORD: print3d
+    ports:
+      - "8080:8080"
+
+  payment-service:
+    build: ./payment-service
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/payment_db
+      SPRING_DATASOURCE_USERNAME: print3d
+      SPRING_DATASOURCE_PASSWORD: print3d
+    ports:
+      - "9090:9090" # gRPC
+
+  invoice-service:
+    build: ./invoice-service
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/invoice_db
+      SPRING_DATASOURCE_USERNAME: print3d
+      SPRING_DATASOURCE_PASSWORD: print3d
+    ports:
+      - "8082:8082"
+
+volumes:
+  pgdata:
