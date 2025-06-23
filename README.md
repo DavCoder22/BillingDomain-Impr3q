@@ -18,7 +18,7 @@ Each service is implemented in Java and uses PostgreSQL for persistence, but exp
 
 ## Project Structure
 
-```
+```text
 BillingDM-Impr3q/
 ├── quotation-service/     # REST API for quotation management
 │   └── README.md
@@ -65,10 +65,13 @@ BillingDM-Impr3q/
 ### Running Services
 
 1. Start the database and services:
+
    ```bash
    docker-compose up -d
    ```
+
 2. Build and run individual services:
+
    ```bash
    cd service-name
    mvn spring-boot:run

@@ -101,7 +101,7 @@ Here's an example SOAP request for generating an invoice:
 
 Once the service is running, you can access the WSDL at:
 
-```
+```text
 http://localhost:8082/ws/invoices?wsdl
 ```
 
