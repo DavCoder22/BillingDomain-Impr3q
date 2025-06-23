@@ -1,0 +1,6 @@
+com\example\quotation\QuotationServiceApplication.class
+com\example\quotation\model\Quote.class
+com\example\quotation\controller\QuoteController.class
+com\example\quotation\repository\QuoteRepository.class
+com\example\quotation\dto\QuoteRequest.class
+com\example\quotation\service\QuoteService.class

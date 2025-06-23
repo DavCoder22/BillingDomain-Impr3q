@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "com.example.payment.proto";
+option java_outer_classname = "PaymentProto";
+
+package payment;
+
+message CreatePaymentRequest {
+  int64 quoteId = 1;
+  double amount = 2;
+  string method = 3; // e.g. CREDIT_CARD, PAYPAL
+}
+
+message PaymentStatusRequest {
+  int64 paymentId = 1;
+}
+
+message PaymentResponse {
+  int64 paymentId = 1;
+  string status = 2; // e.g. PENDING, COMPLETED
+}
+
+service PaymentService {
+  rpc CreatePayment (CreatePaymentRequest) returns (PaymentResponse);
+  rpc GetPaymentStatus (PaymentStatusRequest) returns (PaymentResponse);
+}
