@@ -1,0 +1,43 @@
+name: Deploy to Production
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+    paths-ignore:
+      - 'README.md'
+      - '.gitignore'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Java
+      uses: actions/setup-java@v3
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+        
+    - name: Build with Maven
+      run: mvn -B clean package --file pom.xml
+      
+    # Aquí irían los pasos específicos de despliegue a producción
+    - name: Deploy to Production
+      run: |
+        echo "Desplegando a producción..."
+        # Comandos de despliegue específicos para tu entorno de producción
+        
+    - name: Notify on success
+      if: success()
+      run: |
+        echo "Despliegue en producción completado exitosamente"
+        # Aquí podrías agregar notificaciones (Slack, Email, etc.)
+
+    - name: Notify on failure
+      if: failure()
+      run: |
+        echo "Error en el despliegue a producción"
+        exit 1
