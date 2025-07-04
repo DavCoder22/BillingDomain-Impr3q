@@ -1,8 +1,7 @@
-version: "3.9"
-
 services:
+  # Base de datos PostgreSQL
   postgres:
-    image: postgres:16
+    image: postgres:15.4-alpine
     container_name: print3d-postgres
     environment:
       - POSTGRES_USER=print3d
@@ -17,42 +16,129 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    networks:
+      - print3d-network
 
+  # Message Broker
+  rabbitmq:
+    image: rabbitmq:3.9-management-alpine
+    container_name: print3d-rabbitmq
+    ports:
+      - "5672:5672"   # AMQP
+      - "15672:15672" # Management UI
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "status"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - print3d-network
+
+  # Redis para idempotencia
+  redis:
+    image: redis:7
+    container_name: print3d-redis
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - print3d-network
+
+  # Servicios de la aplicación
   quotation-service:
-    build: ./quotation-service
+    build:
+      context: ./quotation-service
+      dockerfile: Dockerfile
+    container_name: quotation-service
     depends_on:
       postgres:
         condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/quotation_db
-      SPRING_DATASOURCE_USERNAME: print3d
-      SPRING_DATASOURCE_PASSWORD: print3d
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/quotation_db
+      - SPRING_DATASOURCE_USERNAME=print3d
+      - SPRING_DATASOURCE_PASSWORD=print3d
+      - SPRING_RABBITMQ_HOST=rabbitmq
+      - SPRING_REDIS_HOST=redis
     ports:
       - "8080:8080"
+    networks:
+      - print3d-network
 
   payment-service:
-    build: ./payment-service
+    build:
+      context: ./payment-service
+      dockerfile: Dockerfile
+    container_name: payment-service
     depends_on:
       postgres:
         condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/payment_db
-      SPRING_DATASOURCE_USERNAME: print3d
-      SPRING_DATASOURCE_PASSWORD: print3d
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/payment_db
+      - SPRING_DATASOURCE_USERNAME=print3d
+      - SPRING_DATASOURCE_PASSWORD=print3d
+      - SPRING_RABBITMQ_HOST=rabbitmq
+      - SPRING_REDIS_HOST=redis
+      - SERVER_PORT=9090
     ports:
-      - "9090:9090" # gRPC
+      - "9090:9090"
+    networks:
+      - print3d-network
 
   invoice-service:
-    build: ./invoice-service
+    build:
+      context: ./invoice-service
+      dockerfile: Dockerfile
+    container_name: invoice-service
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/invoice_db
+      - SPRING_DATASOURCE_USERNAME=print3d
+      - SPRING_DATASOURCE_PASSWORD=print3d
+      - SPRING_RABBITMQ_HOST=rabbitmq
+      - SPRING_REDIS_HOST=redis
+    ports:
+      - "8081:8081"
+    networks:
+      - print3d-network
+
+# Redes y volúmenes
+  # Servicio para ejecutar pruebas del servicio de cotizaciones
+  quotation-tests:
+    build:
+      context: ./quotation-service
+      dockerfile: Dockerfile.test
+    container_name: quotation-tests
     depends_on:
       postgres:
         condition: service_healthy
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/invoice_db
-      SPRING_DATASOURCE_USERNAME: print3d
-      SPRING_DATASOURCE_PASSWORD: print3d
-    ports:
-      - "8082:8082"
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/quotation_db
+      - SPRING_DATASOURCE_USERNAME=print3d
+      - SPRING_DATASOURCE_PASSWORD=print3d
+    networks:
+      - print3d-network
+
+networks:
+  print3d-network:
+    driver: bridge
 
 volumes:
   pgdata:

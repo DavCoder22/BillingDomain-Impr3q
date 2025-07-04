@@ -1,0 +1,28 @@
+FROM maven:3.9.6-eclipse-temurin-17 AS build
+
+# Crear directorio de trabajo
+WORKDIR /app
+
+# Copiar primero el POM padre
+COPY ./pom.xml ./pom.xml
+
+# Instalar el POM padre en el repositorio local
+RUN mvn install -N
+
+# Copiar el POM del servicio
+COPY ./quotation-service/pom.xml ./quotation-service/
+
+# Copiar el código fuente
+COPY ./quotation-service/src ./quotation-service/src
+
+# Cambiar al directorio del servicio
+WORKDIR /app/quotation-service
+
+# Descargar dependencias
+RUN mvn dependency:go-offline -B
+
+# Ejecutar pruebas y construir el JAR
+RUN mvn clean test package
+
+# Verificar que las pruebas se ejecutaron correctamente
+RUN test -f target/surefire-reports/TEST-*.xml && echo "Las pruebas se ejecutaron correctamente" || (echo "Error en las pruebas" && exit 1)

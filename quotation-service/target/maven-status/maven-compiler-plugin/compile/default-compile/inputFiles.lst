@@ -1,6 +1,6 @@
-D:\UCE\SEMESTRE 2024-2025\ProgramacionDistribuida\BillingDM-Impr3q\quotation-service\src\main\java\com\example\quotation\model\Quote.java
-D:\UCE\SEMESTRE 2024-2025\ProgramacionDistribuida\BillingDM-Impr3q\quotation-service\src\main\java\com\example\quotation\dto\QuoteRequest.java
-D:\UCE\SEMESTRE 2024-2025\ProgramacionDistribuida\BillingDM-Impr3q\quotation-service\src\main\java\com\example\quotation\service\QuoteService.java
-D:\UCE\SEMESTRE 2024-2025\ProgramacionDistribuida\BillingDM-Impr3q\quotation-service\src\main\java\com\example\quotation\repository\QuoteRepository.java
-D:\UCE\SEMESTRE 2024-2025\ProgramacionDistribuida\BillingDM-Impr3q\quotation-service\src\main\java\com\example\quotation\controller\QuoteController.java
-D:\UCE\SEMESTRE 2024-2025\ProgramacionDistribuida\BillingDM-Impr3q\quotation-service\src\main\java\com\example\quotation\QuotationServiceApplication.java
+/app/quotation-service/src/main/java/com/example/quotation/service/QuoteService.java
+/app/quotation-service/src/main/java/com/example/quotation/controller/QuoteController.java
+/app/quotation-service/src/main/java/com/example/quotation/dto/QuoteRequest.java
+/app/quotation-service/src/main/java/com/example/quotation/repository/QuoteRepository.java
+/app/quotation-service/src/main/java/com/example/quotation/model/Quote.java
+/app/quotation-service/src/main/java/com/example/quotation/QuotationServiceApplication.java

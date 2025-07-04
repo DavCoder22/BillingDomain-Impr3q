@@ -6,6 +6,7 @@ import com.example.quotation.repository.QuoteRepository;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 @Service
 public class QuoteService {
@@ -39,6 +40,6 @@ public class QuoteService {
             default -> 1.3;
         };
         double price = (req.getVolumeCm3() * base + req.getPrintTimeHours() * timeRate) * materialFactor;
-        return BigDecimal.valueOf(price).setScale(2, BigDecimal.ROUND_HALF_UP);
+        return BigDecimal.valueOf(price).setScale(2, RoundingMode.HALF_UP);
     }
 }

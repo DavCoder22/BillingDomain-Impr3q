@@ -1,3 +1,5 @@
+# Outputs - Additional outputs not already defined in main.tf
+
 output "vpc_id" {
   description = "The ID of the VPC"
   value       = module.vpc.vpc_id
@@ -36,7 +38,7 @@ output "rds_endpoint" {
   value       = module.rds.db_instance_endpoint
 }
 
-alb_dns_name" {
+output "alb_dns_name" {
   description = "The DNS name of the load balancer"
   value       = aws_lb.main.dns_name
 }
@@ -56,11 +58,11 @@ output "alb_https_listener_arn" {
   value       = aws_lb_listener.https.arn
 }
 
-output "ecs_service_arns" {
-  description = "The ARNs of the ECS services"
+output "ecs_service_names" {
+  description = "The names of the ECS services"
   value = {
     for service in ["quotation", "payment", "invoice"] :
-    service => module.ecs_service[service].ecs_service_arn
+    service => module.ecs_service[service].ecs_service_name
   }
 }
 

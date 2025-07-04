@@ -19,6 +19,8 @@ module "vpc" {
   private_subnet_cidrs = var.private_subnet_cidrs
   availability_zones  = var.availability_zones
   environment         = var.environment
+  project_name        = var.project_name
+  tags                = var.tags
 }
 
 # Create ECS Cluster
@@ -77,13 +79,10 @@ module "rds" {
 module "ecs_service" {
   source = "./modules/ecs"
   
-  for_each = {
-    "quotation" = { port = 8080, cpu = 256, memory = 512, desired_count = 2, container_port = 8080 },
-    "payment"   = { port = 50051, cpu = 512, memory = 1024, desired_count = 2, container_port = 50051 },
-    "invoice"   = { port = 8082, cpu = 512, memory = 1024, desired_count = 2, container_port = 8080 }
-  }
+  for_each = local.services
   
   name           = "${var.project_name}-${each.key}-service"
+  project_name   = var.project_name
   environment    = var.environment
   vpc_id         = module.vpc.vpc_id
   cluster_id     = aws_ecs_cluster.main.id
@@ -99,15 +98,53 @@ module "ecs_service" {
   db_password = var.db_password
   
   # Network configuration
-  public_subnet_ids  = module.vpc.public_subnet_ids
   private_subnet_ids = module.vpc.private_subnet_ids
   
   # Container configuration
   container_image = "${aws_ecr_repository.services["${each.key}-service"].repository_url}:latest"
-  container_port  = each.value.container_port
   
   # Load balancer configuration
-  alb_target_group_arn = aws_lb_target_group.main[each.key].arn
+  alb_target_group_arn   = aws_lb_target_group.main[each.key].arn
+  alb_security_group_id  = aws_security_group.alb.id
+}
+
+# Security Group for ALB
+resource "aws_security_group" "alb" {
+  name        = "${var.project_name}-alb-sg-${var.environment}"
+  description = "Security group for ALB"
+  vpc_id      = module.vpc.vpc_id
+
+  # Allow HTTP/HTTPS from anywhere
+  ingress {
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+
+  ingress {
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+
+  # Allow all outbound traffic
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+
+  tags = {
+    Name        = "${var.project_name}-alb-sg-${var.environment}"
+    Environment = var.environment
+    Project     = var.project_name
+  }
 }
 
 # Application Load Balancer
@@ -194,11 +231,7 @@ resource "aws_lb_listener" "https" {
 
 # ALB Listener Rules
 resource "aws_lb_listener_rule" "services" {
-  for_each = {
-    "quotation" = "/api/quotes/*",
-    "payment"   = "/api/payments/*",
-    "invoice"   = "/api/invoices/*"
-  }
+  for_each = { for k, v in local.services : k => v.path }
   
   listener_arn = aws_lb_listener.https.arn
   priority     = 100 + index(keys(local.services), each.key)
@@ -230,60 +263,4 @@ resource "aws_acm_certificate" "main" {
   }
 }
 
-# Security Group for ALB
-resource "aws_security_group" "alb" {
-  name        = "${var.project_name}-alb-sg-${var.environment}"
-  description = "Security group for ALB"
-  vpc_id      = module.vpc.vpc_id
-  
-  ingress {
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-  
-  ingress {
-    from_port   = 443
-    to_port     = 443
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-  
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-  
-  tags = {
-    Name        = "${var.project_name}-alb-sg-${var.environment}"
-    Environment = var.environment
-    Project     = var.project_name
-  }
-}
-
-# Outputs
-output "alb_dns_name" {
-  description = "The DNS name of the load balancer"
-  value       = aws_lb.main.dns_name
-}
-
-output "ecr_repository_urls" {
-  description = "The URLs of the ECR repositories"
-  value = {
-    for service, repo in aws_ecr_repository.services :
-    service => repo.repository_url
-  }
-}
-
-output "rds_endpoint" {
-  description = "The connection endpoint for the RDS instance"
-  value       = module.rds.db_instance_address
-}
-
-output "ecs_cluster_name" {
-  description = "The name of the ECS cluster"
-  value       = aws_ecs_cluster.main.name
-}
+# Outputs moved to outputs.tf to avoid duplication
