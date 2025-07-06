@@ -30,7 +30,7 @@
         <mockito.version>4.11.0</mockito.version>
         <testcontainers.version>1.17.6</testcontainers.version>
         <junit-platform.version>1.9.2</junit-platform.version>
-        <jacoco.version>0.8.8</jacoco.version>
+        <jacoco.version>0.8.11</jacoco.version>
     </properties>
 
     <dependencyManagement>

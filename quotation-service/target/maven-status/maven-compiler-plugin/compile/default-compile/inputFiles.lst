@@ -1,6 +1,0 @@
-/app/quotation-service/src/main/java/com/example/quotation/service/QuoteService.java
-/app/quotation-service/src/main/java/com/example/quotation/controller/QuoteController.java
-/app/quotation-service/src/main/java/com/example/quotation/dto/QuoteRequest.java
-/app/quotation-service/src/main/java/com/example/quotation/repository/QuoteRepository.java
-/app/quotation-service/src/main/java/com/example/quotation/model/Quote.java
-/app/quotation-service/src/main/java/com/example/quotation/QuotationServiceApplication.java

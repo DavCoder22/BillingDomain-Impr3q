@@ -112,7 +112,7 @@ resource "aws_ecs_service" "main" {
   
   network_configuration {
     subnets          = var.private_subnet_ids
-    security_groups  = [aws_security_group.ecs_tasks.id]
+    security_groups  = [var.ecs_security_group_id]
     assign_public_ip = false
   }
   
@@ -130,36 +130,7 @@ resource "aws_ecs_service" "main" {
   tags = var.tags
 }
 
-# Security Group for ECS Tasks
-resource "aws_security_group" "ecs_tasks" {
-  name        = "${var.name}-sg-${var.environment}"
-  description = "Security group for ECS tasks"
-  vpc_id      = var.vpc_id
-  
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-  
-  tags = merge(
-    {
-      Name = "${var.name}-sg-${var.environment}"
-    },
-    var.tags
-  )
-}
 
-# Security Group Rule to allow traffic from ALB to ECS tasks
-resource "aws_security_group_rule" "ecs_ingress" {
-  type                     = "ingress"
-  from_port                = var.container_port
-  to_port                  = var.container_port
-  protocol                = "tcp"
-  security_group_id        = aws_security_group.ecs_tasks.id
-  source_security_group_id = var.alb_security_group_id
-}
 
 # Outputs
 output "ecs_service_name" {
@@ -172,7 +143,4 @@ output "task_definition_arn" {
   value       = aws_ecs_task_definition.main.arn
 }
 
-output "task_security_group_id" {
-  description = "The ID of the security group for the ECS tasks"
-  value       = aws_security_group.ecs_tasks.id
-}
+

@@ -5,13 +5,17 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>com.example.print3d</groupId>
-        <artifactId>print3d-parent</artifactId>
-        <version>0.0.1-SNAPSHOT</version>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>3.2.0</version>
+        <relativePath/>
     </parent>
 
+    <groupId>com.example.print3d</groupId>
     <artifactId>payment-service</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
     <name>payment-service</name>
+    <description>Servicio de pagos con gRPC para impresión 3D</description>
     <packaging>jar</packaging>
 
     <properties>
@@ -25,6 +29,9 @@
         <h2.version>2.2.224</h2.version>
         <postgresql.version>42.6.1</postgresql.version>
         <flyway.version>9.22.3</flyway.version>
+        <surefire.version>3.0.0-M7</surefire.version>
+        <failsafe.version>3.0.0-M7</failsafe.version>
+        <jacoco.version>0.8.12</jacoco.version>
     </properties>
 
     <dependencyManagement>
@@ -67,6 +74,12 @@
             <artifactId>spring-boot-starter-data-jpa</artifactId>
         </dependency>
 
+        <!-- Spring Boot Actuator -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+
         <!-- Database -->
         <dependency>
             <groupId>org.postgresql</groupId>
@@ -84,6 +97,22 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
+        </dependency>
+        
+        <!-- Lombok for reducing boilerplate code -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>1.18.32</version>
+            <scope>provided</scope>
+            <optional>true</optional>
+        </dependency>
+
+        <!-- SpringDoc OpenAPI for Swagger documentation -->
+        <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+            <version>2.1.0</version>
         </dependency>
         
         <!-- Required for Java 11+ compatibility with gRPC -->
@@ -184,22 +213,7 @@
                 </configuration>
             </plugin>
             
-            <!-- Plugin para ejecutar tests con Docker -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-failsafe-plugin</artifactId>
-                <version>3.0.0-M7</version>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>integration-test</goal>
-                            <goal>verify</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            
-            <!-- Plugin para compilar archivos .proto con protoc-jar -->
+            <!-- Protobuf and gRPC Plugin -->
             <plugin>
                 <groupId>com.github.os72</groupId>
                 <artifactId>protoc-jar-maven-plugin</artifactId>
@@ -211,35 +225,71 @@
                             <goal>run</goal>
                         </goals>
                         <configuration>
-                            <protocVersion>${protoc.version}</protocVersion>
+                            <protocArtifact>com.google.protobuf:protoc:${protoc.version}</protocArtifact>
                             <inputDirectories>
                                 <include>src/main/proto</include>
                             </inputDirectories>
-                            <includeStdTypes>true</includeStdTypes>
-                            <includeDirectories>
-                                <include>${project.basedir}/src/main/proto</include>
-                            </includeDirectories>
                             <outputTargets>
                                 <outputTarget>
                                     <type>java</type>
-                                    <outputDirectory>${project.build.directory}/generated-sources/protobuf/java</outputDirectory>
+                                    <outputDirectory>src/main/java</outputDirectory>
                                 </outputTarget>
                                 <outputTarget>
                                     <type>grpc-java</type>
+                                    <outputDirectory>src/main/java</outputDirectory>
                                     <pluginArtifact>io.grpc:protoc-gen-grpc-java:${grpc.version}</pluginArtifact>
-                                    <outputDirectory>${project.build.directory}/generated-sources/protobuf/grpc-java</outputDirectory>
                                 </outputTarget>
                             </outputTargets>
                         </configuration>
                     </execution>
                 </executions>
             </plugin>
-
-            <!-- Asegurarse de que los fuentes generados se incluyan en el classpath -->
             
+            <!-- Maven Surefire Plugin for running tests -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>${surefire.version}</version>
+                <configuration>
+                    <includes>
+                        <include>**/*Test.java</include>
+                        <include>**/*Tests.java</include>
+                    </includes>
+                    <excludes>
+                        <exclude>**/*IntegrationTest.java</exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
             
-            <!-- Add generated sources to the build path -->
+            <!-- Maven Failsafe Plugin for integration tests -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <version>${failsafe.version}</version>
+                <configuration>
+                    <includes>
+                        <include>**/*IntegrationTest.java</include>
+                    </includes>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>integration-test</goal>
+                            <goal>verify</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
             
+            <!-- JaCoCo Plugin for code coverage -->
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>${jacoco.version}</version>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 </project>

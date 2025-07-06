@@ -23,6 +23,35 @@ module "vpc" {
   tags                = var.tags
 }
 
+# Elastic IPs for NAT Gateways
+resource "aws_eip" "nat" {
+  count = length(var.availability_zones)
+  
+  domain = "vpc"
+  
+  tags = {
+    Name        = "${var.project_name}-nat-eip-${count.index + 1}-${var.environment}"
+    Environment = var.environment
+    Project     = var.project_name
+  }
+}
+
+# NAT Gateways
+resource "aws_nat_gateway" "main" {
+  count = length(var.availability_zones)
+  
+  allocation_id = aws_eip.nat[count.index].id
+  subnet_id     = module.vpc.public_subnet_ids[count.index]
+  
+  tags = {
+    Name        = "${var.project_name}-nat-gw-${count.index + 1}-${var.environment}"
+    Environment = var.environment
+    Project     = var.project_name
+  }
+  
+  depends_on = [module.vpc.internet_gateway_id]
+}
+
 # Create ECS Cluster
 resource "aws_ecs_cluster" "main" {
   name = "${var.project_name}-cluster-${var.environment}"
@@ -106,6 +135,7 @@ module "ecs_service" {
   # Load balancer configuration
   alb_target_group_arn   = aws_lb_target_group.main[each.key].arn
   alb_security_group_id  = aws_security_group.alb.id
+  ecs_security_group_id  = aws_security_group.ecs.id
 }
 
 # Security Group for ALB
@@ -147,6 +177,43 @@ resource "aws_security_group" "alb" {
   }
 }
 
+# Security Group for ECS Services
+resource "aws_security_group" "ecs" {
+  name        = "${var.project_name}-ecs-sg-${var.environment}"
+  description = "Security group for ECS services"
+  vpc_id      = module.vpc.vpc_id
+
+  # Allow traffic from ALB
+  ingress {
+    from_port       = 0
+    to_port         = 65535
+    protocol        = "tcp"
+    security_groups = [aws_security_group.alb.id]
+  }
+
+  # Allow internal communication between services
+  ingress {
+    from_port = 0
+    to_port   = 65535
+    protocol  = "tcp"
+    self      = true
+  }
+
+  # Allow all outbound traffic
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name        = "${var.project_name}-ecs-sg-${var.environment}"
+    Environment = var.environment
+    Project     = var.project_name
+  }
+}
+
 # Application Load Balancer
 resource "aws_lb" "main" {
   name               = "${var.project_name}-alb-${var.environment}"
@@ -165,21 +232,17 @@ resource "aws_lb" "main" {
 
 # ALB Target Groups
 resource "aws_lb_target_group" "main" {
-  for_each = {
-    "quotation" = 8080,
-    "payment"   = 50051,
-    "invoice"   = 8082
-  }
+  for_each = local.services
   
   name        = "${var.project_name}-${each.key}-tg-${var.environment}"
-  port        = each.value
+  port        = each.value.port
   protocol    = "HTTP"
   vpc_id      = module.vpc.vpc_id
   target_type = "ip"
   
   health_check {
     enabled             = true
-    path                = "/actuator/health"
+    path                = each.key == "invoice" ? "/ws/actuator/health" : "/api/actuator/health"
     healthy_threshold   = 3
     unhealthy_threshold = 3
     timeout             = 10

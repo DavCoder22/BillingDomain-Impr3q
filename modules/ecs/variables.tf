@@ -97,6 +97,11 @@ variable "alb_security_group_id" {
   type        = string
 }
 
+variable "ecs_security_group_id" {
+  description = "The ID of the ECS security group"
+  type        = string
+}
+
 variable "tags" {
   description = "A map of tags to add to all resources"
   type        = map(string)
