@@ -1,0 +1,24 @@
+GROUP,PACKAGE,CLASS,INSTRUCTION_MISSED,INSTRUCTION_COVERED,BRANCH_MISSED,BRANCH_COVERED,LINE_MISSED,LINE_COVERED,COMPLEXITY_MISSED,COMPLEXITY_COVERED,METHOD_MISSED,METHOD_COVERED
+payment-service,com.example.payment.service,PaymentGrpcService,27,3,0,0,14,1,2,1,2,1
+payment-service,com.example.payment,PaymentServiceApplication,0,8,0,0,0,3,0,2,0,2
+payment-service,com.example.payment.proto,PaymentServiceGrpc.PaymentServiceMethodDescriptorSupplier,12,0,0,0,4,0,2,0,2,0
+payment-service,com.example.payment.proto,PaymentStatusRequest.Builder,189,0,21,0,63,0,29,0,18,0
+payment-service,com.example.payment.proto,PaymentServiceGrpc.PaymentServiceBaseDescriptorSupplier,10,0,0,0,3,0,3,0,3,0
+payment-service,com.example.payment.proto,PaymentServiceGrpc.PaymentServiceImplBase,28,3,0,0,12,1,3,1,3,1
+payment-service,com.example.payment.proto,CreatePaymentRequest.new AbstractParser() {...},36,0,0,0,12,0,2,0,2,0
+payment-service,com.example.payment.proto,PaymentServiceGrpc.PaymentServiceFutureStub,29,0,0,0,7,0,4,0,4,0
+payment-service,com.example.payment.proto,PaymentResponse,375,0,32,0,103,0,51,0,35,0
+payment-service,com.example.payment.proto,PaymentResponse.Builder,328,0,34,0,105,0,42,0,24,0
+payment-service,com.example.payment.proto,PaymentServiceGrpc.new AbstractStub.StubFactory() {...},9,0,0,0,2,0,2,0,2,0
+payment-service,com.example.payment.proto,PaymentServiceGrpc.new AbstractStub.StubFactory() {...},9,0,0,0,2,0,2,0,2,0
+payment-service,com.example.payment.proto,PaymentServiceGrpc.new AbstractStub.StubFactory() {...},9,0,0,0,2,0,2,0,2,0
+payment-service,com.example.payment.proto,PaymentServiceGrpc.PaymentServiceFileDescriptorSupplier,3,0,0,0,1,0,1,0,1,0
+payment-service,com.example.payment.proto,CreatePaymentRequest,433,0,38,0,116,0,55,0,36,0
+payment-service,com.example.payment.proto,PaymentServiceGrpc.PaymentServiceStub,31,0,0,0,9,0,4,0,4,0
+payment-service,com.example.payment.proto,PaymentStatusRequest,286,0,22,0,79,0,44,0,33,0
+payment-service,com.example.payment.proto,CreatePaymentRequest.Builder,389,0,39,0,122,0,48,0,27,0
+payment-service,com.example.payment.proto,PaymentServiceGrpc.PaymentServiceBlockingStub,29,0,0,0,7,0,4,0,4,0
+payment-service,com.example.payment.proto,PaymentStatusRequest.new AbstractParser() {...},36,0,0,0,12,0,2,0,2,0
+payment-service,com.example.payment.proto,PaymentProto,82,0,0,0,14,0,4,0,4,0
+payment-service,com.example.payment.proto,PaymentResponse.new AbstractParser() {...},36,0,0,0,12,0,2,0,2,0
+payment-service,com.example.payment.proto,PaymentServiceGrpc.MethodHandlers,38,0,3,0,13,0,5,0,3,0
